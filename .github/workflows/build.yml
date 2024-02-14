@@ -1,9 +1,59 @@
-**If you see this message, don't use other peoples `.tipa` files! They could be outdated or malicious.**
-Here's how to build with GitHub actions:
+name: Build and Package
 
-- Fork https://github.com/RootHide/Bootstrap
-- In your fork, create the file `.github/workflows/build.yml` (type all of this out as the filename) and paste the contents of the `.yml` file attached (or create `.github/workflows/` and upload the `.yml`)
-- Wait a few minutes (you can check the progress in the actions tab)
-- Check your forks releases for the `.tipa`!
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-This doesn't automatically build the latest  `.tipa` and requires a sync to have the latest commits. Please do not use anyones repository that claims to be automatic (except mine, you can easily tell mine is not malicious by what commands are run) as it could contain malicious code or an incorrect `.yml` that does not keep the repository up-to-date.
+jobs:
+  build:
+    name: Build Bootstrap
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Theos
+        run: bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
+
+      - name: Setup Environment
+        run: echo "THEOS=~/theos" >> $GITHUB_ENV
+
+      - name: Make Bootstrap Package
+        run: make package
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Bootstrap.tipa
+          path: ./packages/Bootstrap.tipa
+  update-release:
+    name: Release .tipa
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Delete old release
+      uses: dev-drprasad/delete-tag-and-release@v0.2.1
+      with:
+        delete_release: true
+        tag_name: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Get artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: Bootstrap.tipa
+    - name: Create new release
+      uses: ncipollo/release-action@v1
+      with:
+        name: Rolling Release
+        body: These are automatically updated builds of the latest commit.
+        artifacts: "Bootstrap.tipa"
+        tag: release
+        token: ${{ secrets.GITHUB_TOKEN }}
