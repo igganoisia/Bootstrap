@@ -1,0 +1,9 @@
+**If you see this message, don't use other peoples `.tipa` files! They could be outdated or malicious.**
+Here's how to build with GitHub actions:
+
+- Fork https://github.com/RootHide/Bootstrap
+- In your fork, create the file `.github/workflows/build.yml` (type all of this out as the filename) and paste the contents of the `.yml` file attached (or create `.github/workflows/` and upload the `.yml`)
+- Wait a few minutes (you can check the progress in the actions tab)
+- Check your forks releases for the `.tipa`!
+
+This doesn't automatically build the latest  `.tipa` and requires a sync to have the latest commits. Please do not use anyones repository that claims to be automatic (except mine, you can easily tell mine is not malicious by what commands are run) as it could contain malicious code or an incorrect `.yml` that does not keep the repository up-to-date.
